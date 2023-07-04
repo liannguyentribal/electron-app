@@ -32,7 +32,7 @@ function Hello() {
   }, []);
 
   return (
-    <div className="flex flex-wrap gap-[32px]">
+    <div className="flex gap-[32px]">
       <div className="w-full max-w-[612px]">
         <div className="p-[24px]">
           <ConnectSocket onMessage={handleNewMessageComing} />
@@ -44,7 +44,9 @@ function Hello() {
       </div>
 
       <div className="p-[24px] max-h-[400px] overflow-y-auto flex-shrink-0">
-        MessageHistory: Received {messageReceived}, Sent {messageSent}
+        <div>MessageHistory:</div>
+        <div>Received {messageReceived}</div>
+        <div>Sent {messageSent}</div>
       </div>
     </div>
   );
