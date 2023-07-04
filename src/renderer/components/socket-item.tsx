@@ -32,7 +32,7 @@ export const SocketItem = memo<Props>(
             onMessage({
               identity,
               stream,
-              daq: JSON.parse(message.data),
+              ...JSON.parse(message.data),
             });
             // Send to firebase
           }
