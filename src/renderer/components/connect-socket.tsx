@@ -1,4 +1,5 @@
 import { Button, TextInput } from '@mantine/core';
+import { showNotification } from '@mantine/notifications';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
@@ -9,9 +10,9 @@ type Props = {
 };
 
 export const ConnectSocket = memo<Props>(({ onMessage }) => {
-  const [latestSocketError, setLatestSocketError] = useState<string>();
-
   const [activeSocketHost, setActiveSocketHost] = useState<string>();
+
+  const [httpUrl, setHttpUrl] = useState<string>();
 
   const [socketHost, setSocketHost] = useState<string>();
 
@@ -28,7 +29,10 @@ export const ConnectSocket = memo<Props>(({ onMessage }) => {
     {
       onMessage: (message: MessageEvent<string>) => {
         if (message.data != null && message.data.startsWith('ERROR')) {
-          setLatestSocketError(message.data);
+          showNotification({
+            message: message.data,
+            color: 'red',
+          });
           setActiveSocketHost(undefined);
         } else {
           onMessage(message);
@@ -49,16 +53,17 @@ export const ConnectSocket = memo<Props>(({ onMessage }) => {
   }, [activeSocketHost, readyState]);
 
   const handleSocketAction = useCallback(() => {
-    if (readyState !== ReadyState.OPEN) {
-      if (latestSocketError != null) {
-        setLatestSocketError(undefined);
-      }
+    if (readyState !== ReadyState.OPEN && socketHost != null) {
+      const host = socketHost.trim().toLowerCase();
 
-      setActiveSocketHost(socketHost);
+      const addr = host.includes(':') ? host : `${host}:8888`;
+
+      setActiveSocketHost(`ws://${addr}`);
+      setHttpUrl(`http://${host}`);
     } else {
       setActiveSocketHost(undefined);
     }
-  }, [latestSocketError, readyState, socketHost]);
+  }, [readyState, socketHost]);
 
   const connectionStatus = useMemo(() => {
     return {
@@ -111,12 +116,7 @@ export const ConnectSocket = memo<Props>(({ onMessage }) => {
           </Button>
         </div>
       </div>
-      {latestSocketError != null && (
-        <div className="text-[12px] leading-[18px] text-red-500">
-          An error arose when trying to connect the WebSocket:{' '}
-          {latestSocketError}
-        </div>
-      )}
+
       <div className="text-[12px] leading-[18px] text-gray-600">
         The WebSocket is currently: {connectionStatus}
       </div>
