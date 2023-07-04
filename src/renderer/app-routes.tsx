@@ -3,40 +3,31 @@ import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import { useCallback, useRef, useState } from 'react';
 import { Database, set, ref } from '@firebase/database';
 import { ConnectFirebase, ConnectSocket } from './components';
+import { Message } from './components/socket-item';
 
 // wss://socketsbay.com/wss/v2/1/demo/
 // wss://echo.websocket.events
 
-const normalizeMessage = (message: string) => {
-  return `${new Date().toISOString()}: ${message}`;
-};
-
 function Hello() {
-  const [messageHistory, setMessageHistory] = useState<string[]>([]);
+  const [messageReceived, setMessageReceived] = useState<number>(0);
+  const [messageSent, setMessageSent] = useState<number>(0);
 
   const databaseRef = useRef<Database>();
 
-  const concatMessage = (message: string) => {
-    setMessageHistory((old) => old.concat(message));
-  };
+  const handleNewMessageComing = useCallback((message: Message) => {
+    if (message.daq != null && databaseRef.current != null) {
+      setMessageReceived((count) => count + 1);
 
-  const handleNewMessageComing = useCallback((message: MessageEvent<any>) => {
-    if (message.data != null && databaseRef.current != null) {
-      concatMessage(normalizeMessage(`Receive new date: ${message.data}`));
+      const location = ref(databaseRef.current, message.stream.item);
 
-      const location = ref(databaseRef.current);
-
-      concatMessage(normalizeMessage(`Sending to firebase...`));
-
-      set(location, JSON.parse(message.data))
+      set(location, message)
         .then(() => {
-          return concatMessage(normalizeMessage(`Message sent`));
+          setMessageSent((count) => count + 1);
+          return true;
         })
-        .catch((err) => {
-          console.log('err: ', err);
-          concatMessage(normalizeMessage(`Message send failed`));
+        .catch(() => {
+          //
         });
-      // Push the data to firebase
     }
   }, []);
 
@@ -53,12 +44,7 @@ function Hello() {
       </div>
 
       <div className="p-[24px] max-h-[400px] overflow-y-auto flex-shrink-0">
-        MessageHistory:
-        {messageHistory.map((it, index) => (
-          <div className="text-[12px] my-1" key={index}>
-            {it}
-          </div>
-        ))}
+        MessageHistory: Received {messageReceived}, Sent {messageSent}
       </div>
     </div>
   );

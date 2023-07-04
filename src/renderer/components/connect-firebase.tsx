@@ -114,7 +114,6 @@ export const ConnectFirebase = memo(({ databaseRef }: Props) => {
             color: 'red',
             message: error.code ?? 'An unknown error occurred',
           });
-          console.log('error: ', error);
           setIsLoading(false);
         }
       }

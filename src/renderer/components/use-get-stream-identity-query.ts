@@ -20,30 +20,32 @@ export type StreamChannel = {
 };
 
 export type StreamIdentity = {
-  hash: string;
-  channels: StreamChannel[];
-  details: {
-    Device_Serial: StreamDetail;
-    Device_Type: StreamDetail;
-    Device_Version: StreamDetail;
-    Event: StreamDetail;
-    Gear_1: StreamDetail;
-    Gear_2: StreamDetail;
-    Gear_3: StreamDetail;
-    Gear_4: StreamDetail;
-    Gear_5: StreamDetail;
-    Gear_6: StreamDetail;
-    Log_Date: StreamDetail;
-    Log_Time: StreamDetail;
-    Long_Comment: StreamDetail;
-    Session: StreamDetail;
-    Short_Comment: StreamDetail;
-    Vehicle_Desc: StreamDetail;
-    Vehicle_Id: StreamDetail;
-    Vehicle_Type: StreamDetail;
-    Vehicle_Wheelbase: StreamDetail;
-    Vehicle_Venue: StreamDetail;
-    Vehicle_Venue_Type: StreamDetail;
+  identity: {
+    hash: string;
+    channels: StreamChannel[];
+    details: {
+      Device_Serial: StreamDetail;
+      Device_Type: StreamDetail;
+      Device_Version: StreamDetail;
+      Event: StreamDetail;
+      Gear_1: StreamDetail;
+      Gear_2: StreamDetail;
+      Gear_3: StreamDetail;
+      Gear_4: StreamDetail;
+      Gear_5: StreamDetail;
+      Gear_6: StreamDetail;
+      Log_Date: StreamDetail;
+      Log_Time: StreamDetail;
+      Long_Comment: StreamDetail;
+      Session: StreamDetail;
+      Short_Comment: StreamDetail;
+      Vehicle_Desc: StreamDetail;
+      Vehicle_Id: StreamDetail;
+      Vehicle_Type: StreamDetail;
+      Vehicle_Wheelbase: StreamDetail;
+      Vehicle_Venue: StreamDetail;
+      Vehicle_Venue_Type: StreamDetail;
+    };
   };
 };
 
@@ -64,7 +66,7 @@ export const useGetStreamIdentitiesQuery = (
   httpUri: string,
   streamIds: string[]
 ) => {
-  return useQueries<StreamIdentity[]>(
+  return useQueries<(StreamIdentity | null)[]>(
     streamIds.map((streamId) => ({
       queryKey: ['STREAM_IDENTITY', streamId, httpUri],
       queryFn: () =>

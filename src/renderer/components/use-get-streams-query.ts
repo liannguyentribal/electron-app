@@ -13,7 +13,7 @@ export const useGetStreamsQuery = (
 ) => {
   return useQuery(
     ['GET_STREAM', httpHost] as QueryKey,
-    () => axios.get(`${httpHost}/JSON`).then((res) => res.data),
+    () => axios.get(`${httpHost}/JSON`).then((res) => res.data.streams),
     options
   );
 };
