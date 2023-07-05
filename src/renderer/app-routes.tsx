@@ -2,21 +2,22 @@ import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 
 import { useCallback, useRef, useState } from 'react';
 import { Database, set, ref } from '@firebase/database';
-import { ConnectFirebase, ConnectSocket } from './components';
+import {
+  ConnectFirebase,
+  ConnectSocket,
+  DEFAULT_ACTIVE_CHANNELS,
+} from './components';
 import { Message } from './components/socket-item';
 import { StreamChannel } from './components/use-get-stream-identity-query';
 
-export const transformer = (message: Message) => {
+export const transformer = (message: Message, channelsKey: string[]) => {
   const findChannel = (key: string) =>
     message.identity.channels.find((it) => it.name === key);
 
-  const groundSpeed = findChannel('Ground Speed');
-  const throttlePos = findChannel('Throttle Pos');
-  const engineRPM = findChannel('Engine RPM');
-  const gear = findChannel('Gear');
-  const gForceLat = findChannel('G Force Lat');
-  const gForceLng = findChannel('G Force Long');
-  const steeredAngle = findChannel('Steered Angle');
+  const channels = channelsKey.map((key) => ({
+    key,
+    channel: findChannel(key),
+  }));
 
   const createObject = (key: string, channel?: StreamChannel) => ({
     [key]: channel
@@ -27,45 +28,49 @@ export const transformer = (message: Message) => {
       : null,
   });
 
-  return {
-    ...createObject('groundSpeed', groundSpeed),
-    ...createObject('throttlePos', throttlePos),
-    ...createObject('engineRPM', engineRPM),
-    ...createObject('gear', gear),
-    ...createObject('gForceLat', gForceLat),
-    ...createObject('gForceLng', gForceLng),
-    ...createObject('steeredAngle', steeredAngle),
-  };
+  return Object.assign(
+    {},
+    ...channels.map((channel) => createObject(channel.key, channel.channel))
+  );
 };
 
 function Hello() {
   const [messageReceived, setMessageReceived] = useState<number>(0);
   const [messageSent, setMessageSent] = useState<number>(0);
 
+  const [activeChannels, setActiveChannels] = useState(DEFAULT_ACTIVE_CHANNELS);
+
   const databaseRef = useRef<Database>();
 
-  const handleNewMessageComing = useCallback((message: Message) => {
-    if (message.daq != null && databaseRef.current != null) {
-      setMessageReceived((count) => count + 1);
+  const handleNewMessageComing = useCallback(
+    (message: Message) => {
+      if (message.daq != null && databaseRef.current != null) {
+        setMessageReceived((count) => count + 1);
 
-      const location = ref(databaseRef.current, message.stream.item);
+        const location = ref(databaseRef.current, message.stream.item);
 
-      set(location, transformer(message))
-        .then(() => {
-          setMessageSent((count) => count + 1);
-          return true;
-        })
-        .catch(() => {
-          //
-        });
-    }
-  }, []);
+        set(location, transformer(message, activeChannels))
+          .then(() => {
+            setMessageSent((count) => count + 1);
+            return true;
+          })
+          .catch(() => {
+            //
+          });
+      }
+    },
+    [activeChannels]
+  );
 
   return (
     <div className="flex gap-[32px]">
-      <div className="w-full max-w-[612px]">
+      <div className="w-full max-w-[768px]">
         <div className="p-[24px]">
-          <ConnectSocket onMessage={handleNewMessageComing} />
+          <ConnectSocket
+            onMessage={handleNewMessageComing}
+            activeChannels={activeChannels}
+            onChangeActiveChannels={setActiveChannels}
+          />
         </div>
 
         <div className="p-[24px]">
