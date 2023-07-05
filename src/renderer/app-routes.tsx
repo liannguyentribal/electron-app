@@ -4,9 +4,37 @@ import { useCallback, useRef, useState } from 'react';
 import { Database, set, ref } from '@firebase/database';
 import { ConnectFirebase, ConnectSocket } from './components';
 import { Message } from './components/socket-item';
+import { StreamChannel } from './components/use-get-stream-identity-query';
 
-// wss://socketsbay.com/wss/v2/1/demo/
-// wss://echo.websocket.events
+export const transformer = (message: Message) => {
+  const findChannel = (key: string) =>
+    message.identity.channels.find((it) => it.name === key);
+
+  const groundSpeed = findChannel('Ground Speed');
+  const throttlePos = findChannel('Throttle Pos');
+  const engineRPM = findChannel('Engine RPM');
+  const gear = findChannel('Gear');
+  const gForceLat = findChannel('G Force Lat');
+  const gForceLng = findChannel('G Force Long');
+
+  const createObject = (key: string, channel?: StreamChannel) => ({
+    [key]: channel
+      ? {
+          data: message.daq.samples[channel.index],
+          channel,
+        }
+      : null,
+  });
+
+  return {
+    ...createObject('groundSpeed', groundSpeed),
+    ...createObject('throttlePos', throttlePos),
+    ...createObject('engineRPM', engineRPM),
+    ...createObject('gear', gear),
+    ...createObject('gForceLat', gForceLat),
+    ...createObject('gForceLng', gForceLng),
+  };
+};
 
 function Hello() {
   const [messageReceived, setMessageReceived] = useState<number>(0);
@@ -20,7 +48,7 @@ function Hello() {
 
       const location = ref(databaseRef.current, message.stream.item);
 
-      set(location, message)
+      set(location, transformer(message))
         .then(() => {
           setMessageSent((count) => count + 1);
           return true;

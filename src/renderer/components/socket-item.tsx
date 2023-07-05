@@ -4,9 +4,15 @@ import { useWebSocket } from 'react-use-websocket/dist/lib/use-websocket';
 import { StreamEntity } from './use-get-streams-query';
 import { StreamIdentity } from './use-get-stream-identity-query';
 
-export type Message = {
-  identity: StreamIdentity;
-  daq: string;
+export type Message = StreamIdentity & {
+  daq: {
+    samples: {
+      [k: string]: {
+        t: number | string;
+        n: number | string;
+      };
+    };
+  };
   stream: StreamEntity;
 };
 
@@ -30,7 +36,7 @@ export const SocketItem = memo<Props>(
             });
           } else {
             onMessage({
-              identity,
+              identity: identity.identity,
               stream,
               ...JSON.parse(message.data),
             });
