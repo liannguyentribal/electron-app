@@ -16,6 +16,7 @@ export const transformer = (message: Message) => {
   const gear = findChannel('Gear');
   const gForceLat = findChannel('G Force Lat');
   const gForceLng = findChannel('G Force Long');
+  const steeredAngle = findChannel('Steered Angle');
 
   const createObject = (key: string, channel?: StreamChannel) => ({
     [key]: channel
@@ -33,6 +34,7 @@ export const transformer = (message: Message) => {
     ...createObject('gear', gear),
     ...createObject('gForceLat', gForceLat),
     ...createObject('gForceLng', gForceLng),
+    ...createObject('steeredAngle', steeredAngle),
   };
 };
 
