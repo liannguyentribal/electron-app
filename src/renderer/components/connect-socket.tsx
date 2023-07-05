@@ -72,20 +72,16 @@ export const ConnectSocket = memo<Props>(({ onMessage }) => {
   //   activeSocketHost != null
   // );
 
-  useEffect(() => {
-    if (activeSocketHost != null) {
-      localStorage.setItem(CACHE_SOCKET_HOST_KEY, activeSocketHost);
-    }
-  }, [activeSocketHost]);
-
   const handleSocketAction = useCallback(() => {
     if (socketHost != null) {
-      const host = socketHost.trim().toLowerCase();
+      const host = socketHost.trim();
 
       const addr = host.includes(':') ? host : `${host}:8888`;
 
       setActiveSocketHost(`ws://${addr}`);
       setHttpUrl(`http://${addr}`);
+
+      localStorage.setItem(CACHE_SOCKET_HOST_KEY, socketHost);
     }
   }, [socketHost]);
 
