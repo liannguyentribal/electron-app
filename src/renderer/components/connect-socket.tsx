@@ -3,6 +3,7 @@ import { showNotification } from '@mantine/notifications';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useGetStreamsQuery } from './use-get-streams-query';
 import {
+  StreamChannel,
   StreamIdentity,
   useGetStreamIdentitiesQuery,
 } from './use-get-stream-identity-query';
@@ -187,22 +188,26 @@ export const ConnectSocket = memo<Props>(
           <div>
             <div>Active channel to Stream:</div>
             <div className="flex flex-wrap">
-              {(sampleChannel?.data as any).identity.channels.map((c: any) => (
-                <div key={c.index} className="w-1/4 py-[2px]">
-                  <Switch
-                    label={c.name}
-                    checked={activeChannels.includes(c.name)}
-                    size="xs"
-                    onChange={() =>
-                      activeChannels.includes(c.name)
-                        ? onChangeActiveChannels(
-                            activeChannels.filter((it) => it !== c.name)
-                          )
-                        : onChangeActiveChannels([...activeChannels, c.name])
-                    }
-                  />
-                </div>
-              ))}
+              {(sampleChannel?.data as any).identity.channels
+                .sort((p: StreamChannel, v: StreamChannel) =>
+                  p.name < v.name ? -1 : 1
+                )
+                .map((c: any) => (
+                  <div key={c.index} className="w-1/4 py-[2px]">
+                    <Switch
+                      label={c.name}
+                      checked={activeChannels.includes(c.name)}
+                      size="xs"
+                      onChange={() =>
+                        activeChannels.includes(c.name)
+                          ? onChangeActiveChannels(
+                              activeChannels.filter((it) => it !== c.name)
+                            )
+                          : onChangeActiveChannels([...activeChannels, c.name])
+                      }
+                    />
+                  </div>
+                ))}
             </div>
 
             <Button
