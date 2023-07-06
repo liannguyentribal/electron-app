@@ -1,6 +1,6 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Database, set, ref } from '@firebase/database';
 import {
   ConnectFirebase,
@@ -34,11 +34,24 @@ export const transformer = (message: Message, channelsKey: string[]) => {
   );
 };
 
+const CACHE_ACTIVE_CHANNELS = 'CACHE_ACTIVE_CHANNELS';
+
 function Hello() {
   const [messageReceived, setMessageReceived] = useState<number>(0);
   const [messageSent, setMessageSent] = useState<number>(0);
 
   const [activeChannels, setActiveChannels] = useState(DEFAULT_ACTIVE_CHANNELS);
+
+  useEffect(() => {
+    localStorage.setItem(CACHE_ACTIVE_CHANNELS, JSON.stringify(activeChannels));
+  }, [activeChannels]);
+
+  useEffect(() => {
+    const init = localStorage.getItem(CACHE_ACTIVE_CHANNELS);
+    if (init != null) {
+      setActiveChannels(JSON.parse(init));
+    }
+  }, []);
 
   const databaseRef = useRef<Database>();
 
